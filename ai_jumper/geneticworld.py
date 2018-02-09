@@ -195,13 +195,13 @@ def run(generationSize, bestJumpersNum, mutantsJumpersNum, maxTravelLen, maxGene
                 # Cross the jumpers brains
                 jumpersGenerationList[i].gmlpBrain.cross(randomEliteJumper.gmlpBrain.weights)
                 jumpersGenerationList[i].gmlpBrain.mutate()
-                jumpersGenerationList[i].resetJumper(jumper_start_x, jumper_start_y)
+                jumpersGenerationList[i].resetJumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y)
                 jumpersGenerationList[i].setColor(colors.RED)
                 world.appendJumper(jumpersGenerationList[i])
 
             # Save best Jumpers of last generation in new generation
             for i in range(firstEliteJumperIndex, len(jumpersGenerationList) - 1):
-                jumpersGenerationList[i].resetJumper(jumper_start_x, jumper_start_y)
+                jumpersGenerationList[i].resetJumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y)
                 jumpersGenerationList[i].setColor(colors.BLUE)
                 world.appendJumper(jumpersGenerationList[i])
 

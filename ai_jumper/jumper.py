@@ -77,7 +77,7 @@ class Jumper(pygame.sprite.Sprite):
                 # Asks the jumper brain
                 decision = self.gmlpBrain.propagate_forward([float(precipice_len),
                                                              float(platform_surface_len)])
-                if decision[0] > 0.5:
+                if decision[0] > 0.6:
                     self.jump()
 
     def calc_gravity(self):
