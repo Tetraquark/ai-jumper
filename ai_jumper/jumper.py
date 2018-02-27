@@ -7,7 +7,7 @@ JUMP_Y_SPEED = -8
 
 class Jumper(pygame.sprite.Sprite):
 
-    def __init__(self, x, y, width, height, color, populationNumber, shift_speed, death_y, maxTravelLen, screen_height):
+    def __init__(self, x, y, width, height, color, populationNumber, shift_speed, death_y, maxTravelLen, screen_height, gmlpBrain = None):
         super(Jumper, self).__init__()
 
         self.image = pygame.Surface([width, height])
@@ -24,6 +24,8 @@ class Jumper(pygame.sprite.Sprite):
 
         self.gmlpBrain = gmlp.GeneticMLP(2,6,1)
         self.gmlpBrain.reset()
+        if gmlpBrain is not None:
+            self.gmlpBrain.weights = gmlpBrain
         self.isDead = False
         self.len_walked = 0
         self.maxTravelLen = maxTravelLen

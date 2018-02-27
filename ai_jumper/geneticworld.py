@@ -49,21 +49,25 @@ class World():
 
         self.platforms_sprite_list.draw(screen)
 
-def run(generationSize, bestJumpersNum, mutantsJumpersNum, maxTravelLen, maxGenerationNum):
+    def __del__(self):
+        self.platforms_sprite_list.empty()
+        self.active_sprite_list.empty()
+
+def run(generationSize, maxTravelLen, maxGenerationNum):
     """
     Runs the simulation of the genetic algorithm to select the best jumpers with MLP neural network.
 
     :param generationSize: number of jumpers in generation (int)
-    :param bestJumpersNum: number of the best (elite) generation jumpers (int)
-    :param mutantsJumpersNum: number of jumper-mutants in generation (int)
     :param maxTravelLen: maximum travel length for jumper
     :param maxGenerationNum: number of genetic algorithm iterations
     :return:
     """
 
-    if bestJumpersNum + mutantsJumpersNum > generationSize:
-        bestJumpersNum = generationSize / 2
-        mutantsJumpersNum = generationSize / 2
+    #if bestJumpersNum + mutantsJumpersNum > generationSize:
+    #    bestJumpersNum = generationSize / 2
+    #    mutantsJumpersNum = generationSize / 2
+
+    bestJumpersNum = generationSize / 3
 
     pygame.init()
     textsFont = pygame.font.SysFont(TEXT_FONT, FONT_SIZE)
@@ -169,7 +173,7 @@ def run(generationSize, bestJumpersNum, mutantsJumpersNum, maxTravelLen, maxGene
 
         # Population estimation
         # sort population by travel length
-        jumpersGenerationList = sorted(jumpersGenerationList, key=lambda jumper: jumper.len_walked, reverse=False)
+        jumpersGenerationList = sorted(jumpersGenerationList, key=lambda jumper: jumper.len_walked, reverse=True)
 
         print 'The best length of travel: ' + str(jumpersGenerationList[generationSize - 1].len_walked)
         print 'The worst length of travel : ' + str(jumpersGenerationList[0].len_walked)
@@ -177,33 +181,42 @@ def run(generationSize, bestJumpersNum, mutantsJumpersNum, maxTravelLen, maxGene
 
         if not isBestFounded:
             # Reset world
+            del world
             world = World(shift_speed)
+            newGenerationList = []
 
-            resetJumpersNum = len(jumpersGenerationList) - bestJumpersNum - mutantsJumpersNum
-            firstEliteJumperIndex = len(jumpersGenerationList) - bestJumpersNum
+            # Create crossed and mutants population in new generation, and save old best jumpers
+            for i in range(bestJumpersNum):
+                randomEliteIndex = random.randint(0, bestJumpersNum - 1)
+                while randomEliteIndex != i:
+                    randomEliteIndex = random.randint(0, bestJumpersNum - 1)
 
-            # Create new Jumpers with random neural network weights
-            for i in range(0, resetJumpersNum):
-                jumpersGenerationList[i] = jp.Jumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y, 40, 60,
-                                                     colors.getColor(i), generationCounter + 1, shift_speed, death_height,
-                                                     maxTravelLen, SCREEN_HEIGHT)
-                world.appendJumper(jumpersGenerationList[i])
+                childBrains1, childBrains2 = jumpersGenerationList[i].gmlpBrain.cross(jumpersGenerationList[randomEliteIndex].gmlpBrain.weights)
+                jumperCrossed = jp.Jumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y, 40, 60,
+                                                     colors.VIOLET, generationCounter + 1, shift_speed, death_height,
+                                                     maxTravelLen, SCREEN_HEIGHT, childBrains1)
+                jumperMutant = jp.Jumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y, 40, 60,
+                                                     colors.RED, generationCounter + 1, shift_speed, death_height,
+                                                     maxTravelLen, SCREEN_HEIGHT, childBrains2)
+                jumperMutant.gmlpBrain.mutate()
 
-            # Create mutants population in new generation
-            for i in range(resetJumpersNum, firstEliteJumperIndex):
-                randomEliteJumper = jumpersGenerationList[random.randint(firstEliteJumperIndex, len(jumpersGenerationList) - 1)]
-                # Cross the jumpers brains
-                jumpersGenerationList[i].gmlpBrain.cross(randomEliteJumper.gmlpBrain.weights)
-                jumpersGenerationList[i].gmlpBrain.mutate()
-                jumpersGenerationList[i].resetJumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y)
-                jumpersGenerationList[i].setColor(colors.RED)
-                world.appendJumper(jumpersGenerationList[i])
-
-            # Save best Jumpers of last generation in new generation
-            for i in range(firstEliteJumperIndex, len(jumpersGenerationList)):
                 jumpersGenerationList[i].resetJumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y)
                 jumpersGenerationList[i].setColor(colors.BLUE)
+
+                newGenerationList.append(jumperCrossed)
+                newGenerationList.append(jumperMutant)
+                newGenerationList.append(jumpersGenerationList[i])
+                world.appendJumper(jumperCrossed)
+                world.appendJumper(jumperMutant)
                 world.appendJumper(jumpersGenerationList[i])
+
+            # Create new Jumpers with random neural network weights
+            for i in range(bestJumpersNum * 2 + bestJumpersNum, generationSize):
+                newJumper = jp.Jumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y, 40, 60,
+                                                     colors.getColor(i), generationCounter + 1, shift_speed, death_height,
+                                                     maxTravelLen, SCREEN_HEIGHT)
+                newGenerationList.append(newJumper)
+                world.appendJumper(newJumper)
 
             # Append platforms to new world
             for i in range(platformsNumber):
@@ -211,12 +224,15 @@ def run(generationSize, bestJumpersNum, mutantsJumpersNum, maxTravelLen, maxGene
                     pl.Platform(random.choice(range(pl.PLATFORM_LEN_MIN, pl.PLATFORM_LEN_MAX)), 100, SCREEN_HEIGHT - 100,
                              random.choice(range(pl.PRECIPICE_LEN_MIN, pl.PRECIPICE_LEN_MAX))))
 
+            del jumpersGenerationList[:]
+            jumpersGenerationList = newGenerationList
+
             generationCounter += 1
         else:
             print ' '
             print '==================================================='
             print 'The best jumper comes from generation: ' + str(bestJumper.populationNumber)
-            print 'The Jumper weights:'
+            print 'The Jumper ANN weights:'
             print bestJumper.gmlpBrain.weights
             generationCounter = maxGenerationNum
 
