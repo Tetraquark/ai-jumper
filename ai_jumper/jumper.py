@@ -11,8 +11,9 @@ class Jumper(pygame.sprite.Sprite):
         super(Jumper, self).__init__()
 
         self.image = pygame.Surface([width, height])
-        self.image.fill(color)
+        #self.image.fill(color)
         self.rect = self.image.get_rect()
+        self.color = color
 
         self.rect.x = x
         self.rect.y = y
@@ -86,6 +87,7 @@ class Jumper(pygame.sprite.Sprite):
         borderWidth = 2
         pygame.draw.rect(screen, colors.BLACK, [self.rect.x - borderWidth, self.rect.y - borderWidth,
                                                 self.rect.width + borderWidth, self.rect.height + borderWidth], borderWidth)
+        pygame.draw.rect(screen, self.color, self.rect)
 
     def calc_gravity(self):
         if self.change_y == 0:

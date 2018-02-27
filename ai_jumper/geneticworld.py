@@ -40,7 +40,7 @@ class World():
             platform.rect.x -= self.shiftSpeed
 
     def draw(self, screen, font):
-        self.active_sprite_list.draw(screen)
+        #self.active_sprite_list.draw(screen)
         for jumper in self.active_sprite_list:
             jumper.draw(screen)
             label = font.render(str(jumper.maxTravelLen - jumper.len_walked), 1, colors.BLACK)
