@@ -82,6 +82,11 @@ class Jumper(pygame.sprite.Sprite):
                 if decision[0] > 0.6:
                     self.jump()
 
+    def draw(self, screen):
+        borderWidth = 2
+        pygame.draw.rect(screen, colors.BLACK, [self.rect.x - borderWidth, self.rect.y - borderWidth,
+                                                self.rect.width + borderWidth, self.rect.height + borderWidth], borderWidth)
+
     def calc_gravity(self):
         if self.change_y == 0:
             self.change_y = 1

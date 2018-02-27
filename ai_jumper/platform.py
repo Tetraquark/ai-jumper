@@ -17,3 +17,7 @@ class Platform(pygame.sprite.Sprite):
         self.rect.x = 0
         self.rect.y = y
         self.precipiceWidth = precipiceWidth
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, colors.DIRTY_YELLOW,
+                         [self.rect.x, self.rect.y, self.rect.width - 2, self.rect.height], 2)

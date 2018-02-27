@@ -42,12 +42,16 @@ class World():
     def draw(self, screen, font):
         self.active_sprite_list.draw(screen)
         for jumper in self.active_sprite_list:
+            jumper.draw(screen)
             label = font.render(str(jumper.maxTravelLen - jumper.len_walked), 1, colors.BLACK)
             screen.blit(label, (jumper.rect.x, jumper.rect.y))
             label2 = font.render(str(jumper.populationNumber), 1, colors.BLACK)
             screen.blit(label2, (jumper.rect.x, jumper.rect.y + 20))
 
+
         self.platforms_sprite_list.draw(screen)
+        for platform in self.platforms_list:
+            platform.draw(screen)
 
     def __del__(self):
         self.platforms_sprite_list.empty()
@@ -145,10 +149,12 @@ def run(generationSize, maxTravelLen, maxGenerationNum):
 
                 label = textsFont.render('RED - Jumper-mutants from the last generation.', 1, colors.RED)
                 screen.blit(label, (10, 10))
-                label = textsFont.render('BLUE - best Jumpers from the last generation.', 1, colors.BLUE)
+                label = textsFont.render('LIGHT BLUE - best Jumpers from the last generation.', 1, colors.LIGHT_BLUE)
                 screen.blit(label, (10, 30))
-                label = textsFont.render('OTHER COLORS - new Jumpers.', 1, (0,191,255))
+                label = textsFont.render('VIOLET - crossed best Jumpers from the last generation.', 1, colors.VIOLET)
                 screen.blit(label, (10, 50))
+                label = textsFont.render('OTHER COLORS - new Jumpers.', 1, (0,191,255))
+                screen.blit(label, (10, 70))
                 label = textsFont.render('FPS rate: ' + str(current_fps), 1, colors.BLACK)
                 screen.blit(label, (SCREEN_WIDTH - 140, 10))
                 label = textsFont.render('Generation # ' + str(generationCounter), 1, colors.BLACK)
@@ -201,7 +207,7 @@ def run(generationSize, maxTravelLen, maxGenerationNum):
                 jumperMutant.gmlpBrain.mutate()
 
                 jumpersGenerationList[i].resetJumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y)
-                jumpersGenerationList[i].setColor(colors.BLUE)
+                jumpersGenerationList[i].setColor(colors.LIGHT_BLUE)
 
                 newGenerationList.append(jumperCrossed)
                 newGenerationList.append(jumperMutant)
