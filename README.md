@@ -12,7 +12,7 @@ which jump over the precipices.
 * Right arrow - accelerates the simulation by 32 fps.
 
 
-![Interface screenshot](http://tetraquark.ru/wp-content/uploads/2018/02/aijumper_screenshot.png)
+![Interface screenshot](http://tetraquark.ru/wp-content/uploads/2018/02/aijumper_screenshot2.png)
 
 ## Running
 
