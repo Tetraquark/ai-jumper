@@ -35,12 +35,12 @@ class Jumper(pygame.sprite.Sprite):
 
         self.myFitness = 0
 
-    def update(self):
+    def update(self, platforms_sprites_list):
         # Calc gravity
         self.calc_gravity()
 
         self.rect.x += 2
-        platforms_hit_list = pygame.sprite.spritecollide(self, self.world.platforms_sprite_list, False)
+        platforms_hit_list = pygame.sprite.spritecollide(self, platforms_sprites_list, False)
         self.rect.x -= 2
 
         if len(platforms_hit_list) > 0:
@@ -51,7 +51,7 @@ class Jumper(pygame.sprite.Sprite):
 
         # Move up/down
         self.rect.y += self.change_y
-        platforms_hit_list = pygame.sprite.spritecollide(self, self.world.platforms_sprite_list, False)
+        platforms_hit_list = pygame.sprite.spritecollide(self, platforms_sprites_list, False)
         for platform in platforms_hit_list:
 
             if self.change_y > 0:
@@ -81,7 +81,7 @@ class Jumper(pygame.sprite.Sprite):
                 decision = self.gmlpBrain.propagate_forward([float(precipice_len),
                                                              float(platform_surface_len)])
                 if decision[0] > 0.6:
-                    self.jump()
+                    self.jump(platforms_sprites_list)
 
     def draw(self, screen):
         borderWidth = 2
@@ -100,16 +100,13 @@ class Jumper(pygame.sprite.Sprite):
             self.change_y = 0
             self.rect.y = self.screen_height - self.rect.height
 
-    def jump(self):
+    def jump(self, platforms_sprites_list):
         self.rect.y += 2
-        platform_hit_list = pygame.sprite.spritecollide(self, self.world.platforms_sprite_list, False)
+        platform_hit_list = pygame.sprite.spritecollide(self, platforms_sprites_list, False)
         self.rect.y -= 2
 
         if len(platform_hit_list) > 0 or self.rect.bottom >= self.screen_height:
             self.change_y = JUMP_Y_SPEED
-
-    def setWorld(self, world):
-        self.world = world
 
     def setColor(self, color):
         self.image.fill(color)

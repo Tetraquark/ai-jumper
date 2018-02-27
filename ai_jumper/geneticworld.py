@@ -6,8 +6,8 @@ import colors
 import jumper as jp
 import platform as pl
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
 TEXT_FONT = "Arial"
 FONT_SIZE = 15
 
@@ -19,7 +19,6 @@ class World():
         self.platforms_list = []
 
     def appendJumper(self, jumperObj):
-        jumperObj.setWorld(self)
         self.active_sprite_list.add(jumperObj)
 
     def appendPlatform(self, platform):
@@ -32,12 +31,17 @@ class World():
             self.platforms_list.append(platform)
             self.platforms_sprite_list.add(platform)
 
+        platform.shiftSpeed = self.shiftSpeed
+
     def update(self):
-        self.active_sprite_list.update()
-        self.platforms_sprite_list.update()
+        #self.active_sprite_list.update()
+        #self.platforms_sprite_list.update()
+
+        for worldObj in self.active_sprite_list:
+            worldObj.update(self.platforms_sprite_list)
 
         for platform in self.platforms_list:
-            platform.rect.x -= self.shiftSpeed
+            platform.update()
 
     def draw(self, screen, font):
         #self.active_sprite_list.draw(screen)
@@ -47,7 +51,6 @@ class World():
             screen.blit(label, (jumper.rect.x, jumper.rect.y))
             label2 = font.render(str(jumper.populationNumber), 1, colors.BLACK)
             screen.blit(label2, (jumper.rect.x, jumper.rect.y + 20))
-
 
         self.platforms_sprite_list.draw(screen)
         for platform in self.platforms_list:
@@ -97,7 +100,7 @@ def run(generationSize, maxTravelLen, maxGenerationNum):
     
     # First random population
     for j in range(generationSize):
-        aiJumper = jp.Jumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y, 40, 60, colors.getColor(j),
+        aiJumper = jp.Jumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y, 40, 60 + random.randint(-10,10), colors.getColor(j),
                              0, shift_speed, death_height, maxTravelLen, SCREEN_HEIGHT)
         jumpersGenerationList.append(aiJumper)
         world.appendJumper(aiJumper)
@@ -111,12 +114,12 @@ def run(generationSize, maxTravelLen, maxGenerationNum):
         platformPrecipiceWidth = random.choice(range(pl.PRECIPICE_LEN_MIN, pl.PRECIPICE_LEN_MAX))
         maxTravelLenTmp -= platformLen + platformPrecipiceWidth
         world.appendPlatform(pl.Platform(platformLen, 100, SCREEN_HEIGHT - 100, platformPrecipiceWidth))
-        platformsNumber += 1
 
     generationCounter = 0
     isBestFounded = False
     # Start genetic algorithm (simulation)
     print 'Start simulation: maximum length of travel = ' + str(maxTravelLen)
+    isPaused = False
     while generationCounter < maxGenerationNum:
         print 'Generation N: ' + str(generationCounter)
 
@@ -133,6 +136,8 @@ def run(generationSize, maxTravelLen, maxGenerationNum):
                         current_fps -= _fps_step
                     if event.key == pygame.K_RIGHT:
                         current_fps += _fps_step
+                    if event.key == pygame.K_SPACE:
+                        isPaused = not isPaused
 
             if current_fps > MAX_FPS:
                 current_fps = MAX_FPS
@@ -140,42 +145,43 @@ def run(generationSize, maxTravelLen, maxGenerationNum):
                 current_fps = MIN_FPS
 
             if isRunning:
-                #Update world
-                world.update()
+                if not isPaused:
+                    #Update world
+                    world.update()
 
-                #Draw world
-                screen.fill(colors.WHITE)
-                world.draw(screen, textsFont)
+                    #Draw world
+                    screen.fill(colors.WHITE)
+                    world.draw(screen, textsFont)
 
-                label = textsFont.render('RED - crossed Jumper-mutants from the last generation.', 1, colors.RED)
-                screen.blit(label, (10, 10))
-                label = textsFont.render('LIGHT BLUE - best Jumpers from the last generation.', 1, colors.LIGHT_BLUE)
-                screen.blit(label, (10, 30))
-                label = textsFont.render('VIOLET - crossed best Jumpers from the last generation.', 1, colors.VIOLET)
-                screen.blit(label, (10, 50))
-                label = textsFont.render('OTHER COLORS - new Jumpers.', 1, (0, 51, 102))
-                screen.blit(label, (10, 70))
-                label = textsFont.render('FPS rate: ' + str(current_fps), 1, colors.BLACK)
-                screen.blit(label, (SCREEN_WIDTH - 140, 10))
-                label = textsFont.render('Generation # ' + str(generationCounter), 1, colors.BLACK)
-                screen.blit(label, (SCREEN_WIDTH - 140, 30))
+                    label = textsFont.render('RED - crossed Jumper-mutants from the last generation.', 1, colors.RED)
+                    screen.blit(label, (10, 10))
+                    label = textsFont.render('LIGHT BLUE - best Jumpers from the last generation.', 1, colors.LIGHT_BLUE)
+                    screen.blit(label, (10, 30))
+                    label = textsFont.render('VIOLET - crossed best Jumpers from the last generation.', 1, colors.VIOLET)
+                    screen.blit(label, (10, 50))
+                    label = textsFont.render('OTHER COLORS - new Jumpers.', 1, (0, 51, 102))
+                    screen.blit(label, (10, 70))
+                    label = textsFont.render('FPS rate: ' + str(current_fps), 1, colors.BLACK)
+                    screen.blit(label, (SCREEN_WIDTH - 140, 10))
+                    label = textsFont.render('Generation # ' + str(generationCounter), 1, colors.BLACK)
+                    screen.blit(label, (SCREEN_WIDTH - 140, 30))
 
-                # Check jumpers walk result
-                aliveJumpersList = [jumper for jumper in jumpersGenerationList if not jumper.isDead]
-                if len(aliveJumpersList) > 0:
-                    for jumper in aliveJumpersList:
-                        if jumper.len_walked >= maxTravelLen:
-                            jumper.countFitness()
-                            isRunning = False
-                            isBestFounded = True
-                            bestJumper = jumper
+                    # Check jumpers walk result
+                    aliveJumpersList = [jumper for jumper in jumpersGenerationList if not jumper.isDead]
+                    if len(aliveJumpersList) > 0:
+                        for jumper in aliveJumpersList:
+                            if jumper.len_walked >= maxTravelLen:
+                                jumper.countFitness()
+                                isRunning = False
+                                isBestFounded = True
+                                bestJumper = jumper
 
-                # If all jumpers are dead
-                else:
-                    isRunning = False
+                    # If all jumpers are dead
+                    else:
+                        isRunning = False
 
-                clock.tick(current_fps)
-                pygame.display.flip()
+                    clock.tick(current_fps)
+                    pygame.display.flip()
 
         # Population estimation
         # sort population by travel length
@@ -198,10 +204,10 @@ def run(generationSize, maxTravelLen, maxGenerationNum):
                     randomEliteIndex = random.randint(0, bestJumpersNum - 1)
 
                 childBrains1, childBrains2 = jumpersGenerationList[i].gmlpBrain.cross(jumpersGenerationList[randomEliteIndex].gmlpBrain.weights)
-                jumperCrossed = jp.Jumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y, 40, 60,
+                jumperCrossed = jp.Jumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y, 40, 60 + random.randint(-10,10),
                                                      colors.VIOLET, generationCounter + 1, shift_speed, death_height,
                                                      maxTravelLen, SCREEN_HEIGHT, childBrains1)
-                jumperMutant = jp.Jumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y, 40, 60,
+                jumperMutant = jp.Jumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y, 40, 60 + random.randint(-10,10),
                                                      colors.RED, generationCounter + 1, shift_speed, death_height,
                                                      maxTravelLen, SCREEN_HEIGHT, childBrains2)
                 jumperMutant.gmlpBrain.mutate()
@@ -218,17 +224,25 @@ def run(generationSize, maxTravelLen, maxGenerationNum):
 
             # Create new Jumpers with random neural network weights
             for i in range(bestJumpersNum * 2 + bestJumpersNum, generationSize):
-                newJumper = jp.Jumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y, 40, 60,
+                newJumper = jp.Jumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y, 40, 60 + random.randint(-10,10),
                                                      colors.getColor(i), generationCounter + 1, shift_speed, death_height,
                                                      maxTravelLen, SCREEN_HEIGHT)
                 newGenerationList.append(newJumper)
                 world.appendJumper(newJumper)
 
             # Append platforms to new world
-            for i in range(platformsNumber):
-                world.appendPlatform(
-                    pl.Platform(random.choice(range(pl.PLATFORM_LEN_MIN, pl.PLATFORM_LEN_MAX)), 100, SCREEN_HEIGHT - 100,
-                             random.choice(range(pl.PRECIPICE_LEN_MIN, pl.PRECIPICE_LEN_MAX))))
+            #for i in range(platformsNumber):
+            #    world.appendPlatform(
+            #        pl.Platform(random.choice(range(pl.PLATFORM_LEN_MIN, pl.PLATFORM_LEN_MAX)), 100, SCREEN_HEIGHT - 100,
+            #                 random.choice(range(pl.PRECIPICE_LEN_MIN, pl.PRECIPICE_LEN_MAX))))
+
+            maxTravelLenTmp = maxTravelLen
+            maxTravelLenTmp += pl.PLATFORM_LEN_MAX + pl.PRECIPICE_LEN_MAX
+            while maxTravelLenTmp > 0:
+                platformLen = random.choice(range(pl.PLATFORM_LEN_MIN, pl.PLATFORM_LEN_MAX))
+                platformPrecipiceWidth = random.choice(range(pl.PRECIPICE_LEN_MIN, pl.PRECIPICE_LEN_MAX))
+                maxTravelLenTmp -= platformLen + platformPrecipiceWidth
+                world.appendPlatform(pl.Platform(platformLen, 100, SCREEN_HEIGHT - 100, platformPrecipiceWidth))
 
             del jumpersGenerationList[:]
             jumpersGenerationList = newGenerationList
