@@ -109,7 +109,7 @@ class Jumper(pygame.sprite.Sprite):
             self.change_y = JUMP_Y_SPEED
 
     def setColor(self, color):
-        self.image.fill(color)
+        self.color = color
 
     def resetJumper(self, x, y):
         self.rect.x = x

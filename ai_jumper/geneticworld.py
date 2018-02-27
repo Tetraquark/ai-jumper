@@ -215,12 +215,13 @@ def run(generationSize, maxTravelLen, maxGenerationNum):
                 jumpersGenerationList[i].resetJumper(jumper_start_x + random.choice(range(-20,20)), jumper_start_y)
                 jumpersGenerationList[i].setColor(colors.LIGHT_BLUE)
 
+                newGenerationList.append(jumpersGenerationList[i])
                 newGenerationList.append(jumperCrossed)
                 newGenerationList.append(jumperMutant)
-                newGenerationList.append(jumpersGenerationList[i])
+                world.appendJumper(jumpersGenerationList[i])
                 world.appendJumper(jumperCrossed)
                 world.appendJumper(jumperMutant)
-                world.appendJumper(jumpersGenerationList[i])
+
 
             # Create new Jumpers with random neural network weights
             for i in range(bestJumpersNum * 2 + bestJumpersNum, generationSize):
