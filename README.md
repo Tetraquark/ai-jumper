@@ -10,7 +10,7 @@ which jump over the precipices.
 
 * Left arrow - slows the simulation by 32 fps.
 * Right arrow - accelerates the simulation by 32 fps.
-
+* Spacebar - on/off pause.
 
 ![Interface screenshot](http://tetraquark.ru/wp-content/uploads/2018/02/aijumper_screenshot2.png)
 

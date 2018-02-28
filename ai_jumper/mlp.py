@@ -13,7 +13,7 @@ import numpy as np
 def sigmoid(x):
     ''' Sigmoid like function using tanh '''
     #return np.tanh(x)
-    return 1 / (1 + np.exp(x))
+    return 1 / (1 + np.exp(-x))
 
 def dsigmoid(x):
     ''' Derivative of sigmoid above '''
